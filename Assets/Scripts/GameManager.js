@@ -55,6 +55,7 @@ function OnGUI () {
 		);
     	GUILayout.Window(0, WindowRect0, AddHighscoreForm, "Add Highscore" );
      	if (ScoreSubmitted) {
+     		ScoreSubmitted = false;
      		AddScore(ScoreName, LocalScore);
      		ShowHighscores = 2;
      	}
