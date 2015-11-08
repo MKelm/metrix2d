@@ -9,6 +9,9 @@ private var BlockRows : int = -1;
 private var BlockInRows : GameObject[,];
 private var BlockGravityScale : float = 0.1f;
 
+// true => classic 2008 metrix behaviour
+private var IsOneTryToInsertBlock = true;
+
 function Start () {
 	InsertBlock ();
 }
@@ -96,13 +99,26 @@ function CheckNeighbors(
 function InsertBlock () {
 	var _GS = GameObject.Find("_GM").GetComponent(GameSetup);
 	
-	var iteration = 0;
-	do {
-	  // try to get free column
-	  var Column = Random.Range(0, BlockColumns);
-	  iteration++;
-	} while (iteration < 100 && IsFreeSpaceInColumn(Column) == false);
-	if (iteration >= 100) { 
+	var InsertFailed = false;
+	var Column = -1;
+	if (IsOneTryToInsertBlock === true) {
+		// one try to insert block to a random column (harder, classic 2008)
+		Column = Random.Range(0, BlockColumns);
+		if (IsFreeSpaceInColumn(Column) == false) {
+			InsertFailed = true;
+		}
+	} else {
+		// search for free column, max. 100 tries (easier, new 2014)
+		var Iteration = 0;
+		do {
+		  Column = Random.Range(0, BlockColumns);
+		  Iteration++;
+		} while (Iteration < 100 && IsFreeSpaceInColumn(Column) == false);
+		if (Iteration >= 100) { 
+			InsertFailed = true;
+		}
+	}
+	if (InsertFailed === true) {
 		GameObject.Find("_GM").GetComponent(GameManager).GameOver();
 		return;
 	}
