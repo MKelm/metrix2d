@@ -17,7 +17,7 @@ function Update () {
 			MoveBlock(-1);
 		} else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) { // down
 			// set rigidbody gravity scale
-			rigidbody2D.gravityScale = 10;
+			GetComponent.<Rigidbody2D>().gravityScale = 10;
 		}
 	}
 }
@@ -25,7 +25,7 @@ function Update () {
 function MoveBlock (ColumnDir : int) {
 	var mask : int = LayerMask.NameToLayer("Default");
 	var direction : Vector2 = (ColumnDir == -1) ? -Vector2.right : Vector2.right;
-	var blockSize : float = transform.renderer.bounds.size.x;
+	var blockSize : float = transform.GetComponent.<Renderer>().bounds.size.x;
 	var topBorder = Vector2(
 	  transform.position.x, transform.position.y - blockSize/2
 	);
@@ -38,20 +38,20 @@ function MoveBlock (ColumnDir : int) {
 			   	
 	   	Column = Column + ColumnDir;
 	   	
-	   	var FieldBGSize = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.renderer.bounds.size;
+	   	var FieldBGSize = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.GetComponent.<Renderer>().bounds.size;
 		var ColumnSize = FieldBGSize.x / GameObject.Find("_GM").GetComponent(BlockManager).BlockColumns;
 	   	transform.localPosition.x = (-1 * FieldBGSize.x / 2) + 
-	   	  Column * ColumnSize + transform.renderer.bounds.size.x/2;
+	   	  Column * ColumnSize + transform.GetComponent.<Renderer>().bounds.size.x/2;
 	   	
-	   	audio.clip = MoveBlockAudio;
-		audio.pitch = Random.Range (0.9, 1.1);
-		audio.Play();
+	   	GetComponent.<AudioSource>().clip = MoveBlockAudio;
+		GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
+		GetComponent.<AudioSource>().Play();
 	}
 }
 
 function LateUpdate () {
 	if (IsFalling == true) {
-		rigidbody2D.isKinematic = false;
+		GetComponent.<Rigidbody2D>().isKinematic = false;
 	}
 }
 
@@ -73,7 +73,7 @@ function OnCollisionStay2D (ColInfo : Collision2D) {
 			}
 		}
 		
-		rigidbody2D.isKinematic = true;
+		GetComponent.<Rigidbody2D>().isKinematic = true;
 		IsFalling = false;
 		
 		var BlockManager = GameObject.Find("_GM").GetComponent(BlockManager);
@@ -83,10 +83,10 @@ function OnCollisionStay2D (ColInfo : Collision2D) {
 		Row = gridPos[1];
 		
 		// correct block position to fit correct width/height of grid
-		var FieldBGSize = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.renderer.bounds.size;
+		var FieldBGSize = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.GetComponent.<Renderer>().bounds.size;
 		var RowSize = FieldBGSize.x / BlockManager.BlockColumns; // ColumnSize == RowSize
 	   	transform.localPosition.y = (-1 * FieldBGSize.y / 2) + 
-	   	  Row * RowSize + transform.renderer.bounds.size.y/2;
+	   	  Row * RowSize + transform.GetComponent.<Renderer>().bounds.size.y/2;
 		
 		// get same sprites count in neighborhood
 		var SpritesCount = BlockManager.CheckNeighbors(gridPos, SpriteID, 1, true, false);
@@ -96,7 +96,7 @@ function OnCollisionStay2D (ColInfo : Collision2D) {
 		
 		if (FallsFromTop == true) {
 			FallsFromTop = false;
-			rigidbody2D.gravityScale = 10;
+			GetComponent.<Rigidbody2D>().gravityScale = 10;
 			// insert new block if last from top has reached the ground / grounding block
 			BlockManager.InsertBlock();
 		}

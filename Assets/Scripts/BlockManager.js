@@ -123,7 +123,7 @@ function InsertBlock () {
 		return;
 	}
 
-	var FieldBGSize = _GS.FieldBG.renderer.bounds.size;
+	var FieldBGSize = _GS.FieldBG.GetComponent.<Renderer>().bounds.size;
 	var ColumnSize = FieldBGSize.x / BlockColumns;
 	
 	var newBlock = Instantiate (BlockPrefab, new Vector3(0f, 0f, 0f), Quaternion.Euler(Vector3(0, 0, 0)) );
@@ -132,12 +132,12 @@ function InsertBlock () {
 	
 	// use block size with a small correction value for the box collider
 	newBlock.GetComponent(BoxCollider2D).size = new Vector2(
-	  newBlock.renderer.bounds.size.x / newBlock.localScale.x - newBlock.localScale.x / 300,
-	  newBlock.renderer.bounds.size.y / newBlock.localScale.y - newBlock.localScale.y / 300
+	  newBlock.GetComponent.<Renderer>().bounds.size.x / newBlock.localScale.x - newBlock.localScale.x / 300,
+	  newBlock.GetComponent.<Renderer>().bounds.size.y / newBlock.localScale.y - newBlock.localScale.y / 300
 	);
 	
-	newBlock.localPosition.x = (-1 * FieldBGSize.x / 2) + Column * ColumnSize + newBlock.renderer.bounds.size.x/2;
-	newBlock.localPosition.y = FieldBGSize.y / 2 - newBlock.renderer.bounds.size.y/2;
+	newBlock.localPosition.x = (-1 * FieldBGSize.x / 2) + Column * ColumnSize + newBlock.GetComponent.<Renderer>().bounds.size.x/2;
+	newBlock.localPosition.y = FieldBGSize.y / 2 - newBlock.GetComponent.<Renderer>().bounds.size.y/2;
 	
 	var BlockSpriteId = Random.Range(0, BlockSprites.Length);
 	newBlock.GetComponent(SpriteRenderer).sprite = BlockSprites[BlockSpriteId];
@@ -147,11 +147,11 @@ function InsertBlock () {
 	BlockControl.FallsFromTop = true;
 	
 	if (BlockRows == -1) {
-		BlockRows = Mathf.Floor(FieldBGSize.y / newBlock.renderer.bounds.size.y);
+		BlockRows = Mathf.Floor(FieldBGSize.y / newBlock.GetComponent.<Renderer>().bounds.size.y);
 		BlockInRows = new GameObject[BlockColumns, BlockRows];
 	}
    
-	newBlock.rigidbody2D.gravityScale = BlockGravityScale;
+	newBlock.GetComponent.<Rigidbody2D>().gravityScale = BlockGravityScale;
 	BlockGravityScale += 0.02;
 }
 

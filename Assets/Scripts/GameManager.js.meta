@@ -1,8 +1,14 @@
 fileFormatVersion: 2
 guid: 29310d16f89e4ff4188762ef2778dc71
+timeCreated: 1447014482
+licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - GameOverAudio: {instanceID: 0}
+  - IncreaseScoreAudio: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -32,17 +32,17 @@ function Update () {
 }
 
 function IncreaseScore() {
-	audio.clip = IncreaseScoreAudio;
-	audio.pitch = Random.Range (0.9, 1.1);
-	audio.Play();
+	GetComponent.<AudioSource>().clip = IncreaseScoreAudio;
+	GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
+	GetComponent.<AudioSource>().Play();
 	
 	LocalScore++;
 }
 
 function GameOver () {
-    audio.clip = GameOverAudio;
-	audio.pitch = Random.Range (0.9, 1.1);
-	audio.Play();
+    GetComponent.<AudioSource>().clip = GameOverAudio;
+	GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
+	GetComponent.<AudioSource>().Play();
 	
 	ShowHighscores = 1;
 }

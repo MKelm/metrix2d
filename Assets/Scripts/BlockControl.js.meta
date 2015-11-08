@@ -1,8 +1,13 @@
 fileFormatVersion: 2
 guid: b95d19dd9bac72547aea75f3b99c53f5
+timeCreated: 1447014495
+licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - MoveBlockAudio: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
+  assetBundleName: 
+  assetBundleVariant: 
