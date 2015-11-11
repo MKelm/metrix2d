@@ -16,6 +16,7 @@ var Row : int = -1; // middle block column
 var BlocksReachedGround = 0;
 
 private var Manager : BlockManager;
+private var LCPressed : boolean;
 
 function Start() {
     Manager = GameObject.Find("_GM").GetComponent(BlockManager);
@@ -38,9 +39,14 @@ function Update () {
             MoveGroup(-1);
         } 
         if (Length > 1) {
-            if (Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.Keypad7)) {
+            if (Input.GetKeyDown(KeyCode.LeftControl)) {
+                LCPressed = true;
+            } else if (Input.GetKeyUp(KeyCode.LeftControl)) {
+                LCPressed = false;
+            }
+            if (Input.GetKeyDown(KeyCode.Q) || (LCPressed && Input.GetKeyDown(KeyCode.LeftArrow))) {
                 Rotate(-1); // left
-            } else if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Keypad9)) {
+            } else if (Input.GetKeyDown(KeyCode.E) || (LCPressed && Input.GetKeyDown(KeyCode.RightArrow))) {
                 Rotate(-1); // right
             }
         }
