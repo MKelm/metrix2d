@@ -23,7 +23,7 @@ function Update() {
 	if (Input.GetKey("escape")) {
 		Application.Quit();
 		
-	} else if (Input.inputString == "\b" || Input.GetButtonDown("Fire2")) {
+	} else if (Input.inputString == "\b") {
 		// reset game
 		LocalScore = 0;
 		GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
