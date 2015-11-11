@@ -224,6 +224,7 @@ GameObject:
   - 114: {fileID: 725737007}
   - 114: {fileID: 725737005}
   - 82: {fileID: 725737006}
+  - 114: {fileID: 725737008}
   m_Layer: 0
   m_Name: _GM
   m_TagString: Untagged
@@ -371,6 +372,23 @@ MonoBehaviour:
   ScoreBoxOffsetY: 10
   ScoreBoxSizeX: 80
   ScoreBoxSizeY: 25
+--- !u!114 &725737008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 725737002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb6af0819ce102f4a9328cd9acb2699b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LastIndex: 0
+  Length: 3
+  IsFalling: 1
+  Column: -1
+  Row: -1
+  BlocksReachedGround: 0
 --- !u!1 &736147772
 GameObject:
   m_ObjectHideFlags: 0

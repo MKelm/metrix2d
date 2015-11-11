@@ -13,10 +13,12 @@ private var ScoreSubmitted : boolean = false;
 private var ShowHighscores : int = 0;
 private var ShowSettings : boolean = false;
 
-private var LastBlockStanding : boolean = false;
+private var LastBlockStanding : boolean = false; // default false, classic 2008
+private var BlockGroupRotation : boolean = false; // default true, classic 2008 (not finished yet)
 
 function Start() {
     LastBlockStanding = GetLastBlockStanding(true);
+    BlockGroupRotation = GetBlockGroupRotation(true);
 }
 
 function Update() {
@@ -66,6 +68,21 @@ function SetLastBlockStanding(newValue : boolean, prefs : boolean) {
     }
 }
 
+function GetBlockGroupRotation(prefs : boolean) {
+    if (prefs === true) {
+        BlockGroupRotation = PlayerPrefs.GetInt("settingBlockGroupRotation") == 1;
+    }
+    return BlockGroupRotation;
+}
+
+function SetBlockGroupRotation(newValue : boolean, prefs : boolean) {
+    BlockGroupRotation = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetInt("settingBlockGroupRotation", BlockGroupRotation ? 1 : 0);
+    }
+}
+
+
 function OnGUI() {
 	if (ShowHighscores == 1) { // add highscore window
 		var WindowHeight0 = 100;
@@ -103,12 +120,19 @@ function AddSettingsForm(windowID : int) {
 
     GUILayout.BeginHorizontal();
     SetLastBlockStanding(
-        GUI.Toggle(Rect(15, 20, Screen.width/4, 30), LastBlockStanding, "Last Block Standing"),
+        GUI.Toggle(Rect(15, 20, Screen.width/4, 20), LastBlockStanding, "Last Block Standing"),
         true
     );
     GUILayout.EndHorizontal();
 
-    GUILayout.Space(1 * 15 + 5);
+    GUILayout.BeginHorizontal();
+    SetBlockGroupRotation(
+        GUI.Toggle(Rect(15, 20 + 20, Screen.width/4, 20), BlockGroupRotation, "Block Group & Rotation"),
+        true
+    );
+    GUILayout.EndHorizontal();
+
+    GUILayout.Space(2 * 20);
 
     GUILayout.BeginHorizontal();
     if (GUILayout.Button("Close")) {
