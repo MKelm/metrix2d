@@ -17,20 +17,12 @@ function Start() {
     Manager.SetBlockInGroup(gameObject);
 }
 
-function Update () {
-    if (Moveable == true) {
-		if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) { /// right
-			MoveBlock(1);
-		} else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) { // left
-			MoveBlock(-1);
-		} else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) { // down
-			// set rigidbody gravity scale
-			GetComponent.<Rigidbody2D>().gravityScale = 10;
-		}
-	}
+function SetGravityScale(value : int) {
+    // set rigidbody gravity scale
+    GetComponent.<Rigidbody2D>().gravityScale = value;
 }
 
-function MoveBlock (ColumnDir : int) {
+function MoveBlock (ColumnDir : int, simulate : boolean) {
 	var mask : int = LayerMask.NameToLayer("Default");
 	var direction : Vector2 = (ColumnDir == -1) ? -Vector2.right : Vector2.right;
 	var blockSize : float = transform.GetComponent.<Renderer>().bounds.size.x;
@@ -43,18 +35,23 @@ function MoveBlock (ColumnDir : int) {
 	
 	if (!Physics2D.Raycast(topBorder, direction, blockSize, 1 << mask) &&
 	    !Physics2D.Raycast(bottomBorder, direction, blockSize, 1 << mask)) {
-			   	
-	   	Column = Column + ColumnDir;
+		
+	    if (simulate === false) {
+	        Column = Column + ColumnDir;
 	   	
-	   	var FieldBGSize = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.GetComponent.<Renderer>().bounds.size;
-		var ColumnSize = FieldBGSize.x / GameObject.Find("_GM").GetComponent(BlockManager).BlockColumns;
-	   	transform.localPosition.x = (-1 * FieldBGSize.x / 2) + 
-	   	  Column * ColumnSize + transform.GetComponent.<Renderer>().bounds.size.x/2;
+	        var FieldBGSize = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.GetComponent.<Renderer>().bounds.size;
+	        var ColumnSize = FieldBGSize.x / GameObject.Find("_GM").GetComponent(BlockManager).BlockColumns;
+	        transform.localPosition.x = (-1 * FieldBGSize.x / 2) + 
+              Column * ColumnSize + transform.GetComponent.<Renderer>().bounds.size.x/2;
 	   	
-	   	GetComponent.<AudioSource>().clip = MoveBlockAudio;
-		GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
-		GetComponent.<AudioSource>().Play();
+	        GetComponent.<AudioSource>().clip = MoveBlockAudio;
+	        GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
+	        GetComponent.<AudioSource>().Play();
+	    }
+
+	    return true;
 	}
+	return false;
 }
 
 function LateUpdate () {
@@ -101,8 +98,8 @@ function OnCollisionStay2D (ColInfo : Collision2D) {
 		Manager.CheckNeighbors(gridPos, SpriteID, 1, false, removeBlocks);
 		
 		if (FallsFromTop == true) {
-			FallsFromTop = false;
-			GetComponent.<Rigidbody2D>().gravityScale = 10;
+		    FallsFromTop = false;
+		    SetGravityScale(10);
 			Manager.SetBlockReachedGround();
 		}
 	}

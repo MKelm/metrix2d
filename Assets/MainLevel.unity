@@ -386,6 +386,7 @@ MonoBehaviour:
   LastIndex: 0
   Length: 3
   IsFalling: 1
+  Moveable: 1
   Column: -1
   Row: -1
   BlocksReachedGround: 0

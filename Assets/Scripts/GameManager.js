@@ -16,7 +16,7 @@ private var ShowSettings : boolean = false;
 private var LastBlockStanding : boolean = false; // default false, classic 2008
 private var BlockGroupRotation : boolean = false; // default true, classic 2008 (not finished yet)
 
-function Start() {
+function Awake() {
     LastBlockStanding = GetLastBlockStanding(true);
     BlockGroupRotation = GetBlockGroupRotation(true);
 }
