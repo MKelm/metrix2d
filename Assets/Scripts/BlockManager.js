@@ -124,20 +124,20 @@ function InsertBlock () {
 	var _GS = GameObject.Find("_GM").GetComponent(GameSetup);
 
 	var InsertFailed = false;
-	var Column = -1;
+	var StartColumn = -1;
 	if (Manager.GetLastBlockStanding(false) === false) {
 		// one try to insert block to a random column (harder, classic 2008)
-	    Column = Random.Range(0, MaxBlockColumns);
-		if (IsFreeSpaceInColumn(Column) == false) {
+	    StartColumn = Random.Range(0, MaxBlockColumns);
+	    if (IsFreeSpaceInColumns(StartColumn, GroupControl.Length) == false) {
 			InsertFailed = true;
 		}
 	} else {
 		// search for free column, max. 100 tries (easier, new 2014)
 		var Iteration = 0;
 		do {
-		    Column = Random.Range(0, MaxBlockColumns);
+		    StartColumn = Random.Range(0, MaxBlockColumns);
 		  Iteration++;
-		} while (Iteration < 100 && IsFreeSpaceInColumn(Column) == false);
+		} while (Iteration < 100 && IsFreeSpaceInColumns(StartColumn, GroupControl.Length) == false);
 		if (Iteration >= 100) { 
 			InsertFailed = true;
 		}
@@ -163,7 +163,7 @@ function InsertBlock () {
           newBlock.GetComponent.<Renderer>().bounds.size.y / newBlock.localScale.y - newBlock.localScale.y / 300
         );
 	
-	    newBlock.localPosition.x = (-1 * FieldBGSize.x / 2) + (Column + i) * ColumnSize + newBlock.GetComponent.<Renderer>().bounds.size.x/2;
+	    newBlock.localPosition.x = (-1 * FieldBGSize.x / 2) + (StartColumn + i) * ColumnSize + newBlock.GetComponent.<Renderer>().bounds.size.x/2;
 	    newBlock.localPosition.y = FieldBGSize.y / 2 - newBlock.GetComponent.<Renderer>().bounds.size.y/2;
 	
 	    var BlockSpriteId = Random.Range(0, BlockSprites.Length);
@@ -172,7 +172,7 @@ function InsertBlock () {
 
 	    var CurrentBlockControl = newBlock.GetComponent(BlockControl);
 	    CurrentBlockControl.SpriteID = BlockSpriteId;
-	    CurrentBlockControl.Column = (Column + i);
+	    CurrentBlockControl.Column = (StartColumn + i);
 	    CurrentBlockControl.FallsFromTop = true;	    
 	}
 
@@ -201,13 +201,13 @@ function GetNextFreeRowInColumn (Column : int) : int {
 	return -1;
 }
 
-function IsFreeSpaceInColumn (Column : int) {
-	var BlockCount = 0;
-	for (var i = 0; i < BlockRows; i++) {
-		if (BlockInRows[Column, i] != null) {
-			BlockCount++;
-		}
-	}
-	if (BlockCount == BlockRows) return false;
+function IsFreeSpaceInColumns (StartColumn : int, Length : int) {
+    if (BlockRows > -1) {
+        for (var Column = StartColumn; Column < StartColumn + Length; Column++) {
+            if (BlockInRows[Column, BlockRows - 1] != null) {
+                return false;
+            }
+        }
+    }
 	return true;
 }
