@@ -10,14 +10,11 @@ var SpriteID : int = -1; // used to detect neighbors by color
 var Column : int = -1;
 var Row : int = -1;
 
-var minY : float;
-
 private var Manager : BlockManager;
 private var FieldBGVec : Vector3;
 
 function Start() {
     FieldBGVec = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.GetComponent.<Renderer>().bounds.size;
-    minY = transform.localPosition.y;
 
     Manager = GameObject.Find("_GM").GetComponent(BlockManager);
     Manager.SetBlockInGroup(gameObject);
