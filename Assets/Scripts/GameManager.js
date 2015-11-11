@@ -7,6 +7,9 @@ var ScoreBoxOffsetY : float = 10.0f;
 var ScoreBoxSizeX : float = 80.0f;
 var ScoreBoxSizeY : float = 25.0f;
 
+var TLBoxSizeX : float = 120.0f;
+var TLBoxSizeY : float = 25.0f;
+
 private var LocalScore : int = 0;
 private var ScoreName : String = "";
 private var ScoreSubmitted : boolean = false;
@@ -14,31 +17,47 @@ private var ShowHighscores : int = 0;
 private var ShowSettings : boolean = false;
 
 private var LastBlockStanding : boolean = false; // default false, classic 2008
-private var BlockGroupRotation : boolean = false; // default true, classic 2008 (not finished yet)
+private var BlockGroupRotation : boolean = false; // default true, classic 2008
+
+private var TimeLimit : int = 99;
+private var LocalSeconds : float = 0;
+private var Date = new Date();
 
 function Awake() {
     LastBlockStanding = GetLastBlockStanding(true);
     BlockGroupRotation = GetBlockGroupRotation(true);
+    TimeLimit = GetTimeLimit(true);
 }
 
 function Update() {
-	if (Input.GetKey("escape")) {
-		Application.Quit();
+    if (ShowSettings != true || ShowHighscores > 0) {
+        if (ShowHighscores == 0) {
+            LocalSeconds += Time.deltaTime;
+            if (TimeLimit > 0 && LocalSeconds > TimeLimit) {
+                GameOver();
+            }
+        }
+
+    
+        if (Input.GetKey("escape")) {
+            Application.Quit();
 		
-	} else if (Input.inputString == "\b") {
-		// reset game
-	    Reset();
+        } else if (Input.inputString == "\b") {
+            // reset game
+            Reset();
 		
-	} else if (Input.GetKey("f5")) {
-		// show / hide highscores table
-		ShowHighscores = 2;
-	} else if (Input.GetKey("f8")) {
-	    ShowSettings = true;
-	}
+        } else if (Input.GetKey("f5")) {
+            // show highscores table
+            ShowHighscores = 2;
+        } else if (Input.GetKey("f8")) {
+            ShowSettings = true;
+        }
+    }
 }
 
 function Reset() {
     LocalScore = 0;
+    LocalSeconds = 0;
     GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
 }
 
@@ -57,6 +76,20 @@ function GameOver() {
 	
 	ShowHighscores = 1;
 }
+
+function GetTimeLimit(prefs : boolean) {
+    if (prefs === true) {
+        TimeLimit = PlayerPrefs.GetInt("settingTimeLimit");
+    }
+    return TimeLimit;
+}
+
+    function SetTimeLimit(newValue : int, prefs : boolean) {
+        TimeLimit = newValue;
+        if (prefs === true) {
+            PlayerPrefs.SetInt("settingTimeLimit", TimeLimit);
+        }
+    }
 
 function GetLastBlockStanding(prefs : boolean) {
     if (prefs === true) {
@@ -116,6 +149,12 @@ function OnGUI() {
 			new Rect(Screen.width/2-ScoreBoxSizeX/2, ScoreBoxOffsetY, ScoreBoxSizeX, ScoreBoxSizeY), 
 			"Score: " + LocalScore
 		);
+		if (TimeLimit > 0) {
+		    GUI.Box (
+			    new Rect(Screen.width/2-TLBoxSizeX/2, Screen.height - TLBoxSizeY - ScoreBoxSizeY/2, TLBoxSizeX, TLBoxSizeY), 
+			    "Time Limit: " + Mathf.Floor(TimeLimit - LocalSeconds)
+		    );
+		}
 	}
 }
 
@@ -137,6 +176,18 @@ function AddSettingsForm(windowID : int) {
     GUILayout.EndHorizontal();
 
     GUILayout.Space(2 * 20);
+
+    GUILayout.BeginHorizontal();
+    GUILayout.Label("Time Limit", GUILayout.Width(80));
+    try {
+        SetTimeLimit( int.Parse(GUILayout.TextField(""+ TimeLimit)), true);
+    } catch(err) {
+        SetTimeLimit(0, true);
+    }
+    
+    GUILayout.EndHorizontal();
+
+    GUILayout.Space(5);
 
     GUILayout.BeginHorizontal();
     if (GUILayout.Button("Close")) {
@@ -166,6 +217,7 @@ function AddHighscoresTable(windowID : int) {
 	GUILayout.BeginHorizontal();
 	if (GUILayout.Button("Close")) {
 	    ShowHighscores = 0;
+	    Reset();
 	}
 	GUILayout.EndHorizontal();
     

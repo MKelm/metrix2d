@@ -373,6 +373,8 @@ MonoBehaviour:
   ScoreBoxOffsetY: 10
   ScoreBoxSizeX: 80
   ScoreBoxSizeY: 25
+  TLBoxSizeX: 120
+  TLBoxSizeY: 25
 --- !u!114 &725737008
 MonoBehaviour:
   m_ObjectHideFlags: 0
