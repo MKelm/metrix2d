@@ -17,6 +17,14 @@ function Start() {
     Manager.SetBlockInGroup(gameObject);
 }
 
+function Update () {
+    if (FallsFromTop == true) {
+        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) { // make block faster
+            SetGravityScale(10);
+        }
+    }
+}
+
 function SetGravityScale(value : int) {
     // set rigidbody gravity scale
     GetComponent.<Rigidbody2D>().gravityScale = value;

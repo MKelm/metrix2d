@@ -28,12 +28,6 @@ function Update () {
         } else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) { // left
             MoveGroup(-1);
         }
-        if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) { // down
-            for (var i = 0; i < Length; i++) {
-                if (Blocks[i] == null) continue;
-                Blocks[i].GetComponent(BlockControl).SetGravityScale(10);
-            }
-        }
     }
 }
 
