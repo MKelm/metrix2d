@@ -11,9 +11,16 @@ private var LocalScore : int = 0;
 private var ScoreName : String = "";
 private var ScoreSubmitted : boolean = false;
 private var ShowHighscores : int = 0;
+private var ShowSettings : boolean = false;
 
-function Update () {
-	if (Input.GetKey ("escape") || Input.GetButtonDown("Fire3")) {
+private var LastBlockStanding : boolean = false;
+
+function Start() {
+    LastBlockStanding = GetLastBlockStanding(true);
+}
+
+function Update() {
+	if (Input.GetKey("escape")) {
 		Application.Quit();
 		
 	} else if (Input.inputString == "\b" || Input.GetButtonDown("Fire2")) {
@@ -21,13 +28,11 @@ function Update () {
 		LocalScore = 0;
 		GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
 		
-	} else if (Input.GetButtonDown("Fire1")) {
+	} else if (Input.GetKey("f5")) {
 		// show / hide highscores table
-		if (ShowHighscores == 2) {
-			ShowHighscores = 0;
-		} else if (ShowHighscores == 0) {
-			ShowHighscores = 2;
-		}
+		ShowHighscores = 2;
+	} else if (Input.GetKey("f8")) {
+	    ShowSettings = true;
 	}
 }
 
@@ -39,7 +44,7 @@ function IncreaseScore() {
 	LocalScore++;
 }
 
-function GameOver () {
+function GameOver() {
     GetComponent.<AudioSource>().clip = GameOverAudio;
 	GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
 	GetComponent.<AudioSource>().Play();
@@ -47,7 +52,21 @@ function GameOver () {
 	ShowHighscores = 1;
 }
 
-function OnGUI () {
+function GetLastBlockStanding(prefs : boolean) {
+    if (prefs === true) {
+        LastBlockStanding = PlayerPrefs.GetInt("settingLastBlockStanding") == 1;
+    }
+    return LastBlockStanding;
+}
+
+function SetLastBlockStanding(newValue : boolean, prefs : boolean) {
+    LastBlockStanding = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetInt("settingLastBlockStanding", LastBlockStanding ? 1 : 0);
+    }
+}
+
+function OnGUI() {
 	if (ShowHighscores == 1) { // add highscore window
 		var WindowHeight0 = 100;
 		var WindowRect0 = Rect( 
@@ -60,20 +79,47 @@ function OnGUI () {
      		ShowHighscores = 2;
      	}
 	} else if (ShowHighscores == 2) { // highscores list
-		var WindowHeight1 = 10*35;
-		var WindowRect1 = Rect( 
+	    var WindowHeight1 = 10*35;
+	    var WindowRect1 = Rect( 
 			Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight1/2, Screen.width/2, WindowHeight1 
 		);
-    	GUILayout.Window(0, WindowRect1, AddHighscoresTable, "Highscores" );
+	    GUILayout.Window(0, WindowRect1, AddHighscoresTable, "Highscores" );
+	} else if (ShowSettings == true) {
+	    var WindowHeight2 = 1*35;
+	    var WindowRect2 = Rect( 
+			Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight2/2, Screen.width/2, WindowHeight2 
+		);
+	    GUILayout.Window(0, WindowRect2, AddSettingsForm, "Settings" );
 	} else { // current score box
 		GUI.Box (
-			new Rect (Screen.width/2-ScoreBoxSizeX/2, ScoreBoxOffsetY, ScoreBoxSizeX, ScoreBoxSizeY), 
+			new Rect(Screen.width/2-ScoreBoxSizeX/2, ScoreBoxOffsetY, ScoreBoxSizeX, ScoreBoxSizeY), 
 			"Score: " + LocalScore
 		);
 	}
 }
 
-function AddHighscoresTable (windowID : int) {
+function AddSettingsForm(windowID : int) {
+    GUILayout.BeginVertical();
+
+    GUILayout.BeginHorizontal();
+    SetLastBlockStanding(
+        GUI.Toggle(Rect(15, 20, Screen.width/4, 30), LastBlockStanding, "Last Block Standing"),
+        true
+    );
+    GUILayout.EndHorizontal();
+
+    GUILayout.Space(1 * 15 + 5);
+
+    GUILayout.BeginHorizontal();
+    if (GUILayout.Button("Close")) {
+        ShowSettings = false;
+    }
+    GUILayout.EndHorizontal();
+
+    GUILayout.EndVertical();
+}
+
+function AddHighscoresTable(windowID : int) {
 	GUILayout.BeginVertical();
 	
 	for (var i = 0; i < 10; i++) {
@@ -87,17 +133,24 @@ function AddHighscoresTable (windowID : int) {
 		}
 	}
 
+	GUILayout.Space(5);
+	GUILayout.BeginHorizontal();
+	if (GUILayout.Button("Close")) {
+	    ShowHighscores = 0;
+	}
+	GUILayout.EndHorizontal();
+    
 	GUILayout.EndVertical();
 }
 
-function AddHighscoreForm (windowID : int) {
+function AddHighscoreForm(windowID : int) {
  	GUILayout.BeginVertical();
  	
  	GUILayout.Space(5);
  	
 	GUILayout.BeginHorizontal();
     GUILayout.Label("Name", GUILayout.Width(80));
-    ScoreName = GUILayout.TextField( ScoreName );
+    ScoreName = GUILayout.TextField(ScoreName);
     GUILayout.EndHorizontal();
     
     GUILayout.Space(5);
@@ -108,7 +161,7 @@ function AddHighscoreForm (windowID : int) {
     GUILayout.EndVertical();
 }
 
-function AddScore (name : String, score : int) {
+function AddScore(name : String, score : int) {
    var newScore : int;
    var newName : String;
    var oldScore : int;

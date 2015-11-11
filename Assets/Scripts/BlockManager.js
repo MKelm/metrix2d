@@ -9,10 +9,11 @@ private var BlockRows : int = -1;
 private var BlockInRows : GameObject[,];
 private var BlockGravityScale : float = 0.1f;
 
-// true => classic 2008 metrix behaviour
-private var IsOneTryToInsertBlock = true;
+private var Manager : GameManager;
 
 function Start () {
+    Manager = GameObject.Find("_GM").GetComponent(GameManager);
+
 	InsertBlock ();
 }
 
@@ -89,7 +90,7 @@ function CheckNeighbors(
 		Destroy(BlockInRows[GridPos[0], GridPos[1]]);
 		BlockInRows[GridPos[0], GridPos[1]] = null;
 		
-		GameObject.Find("_GM").GetComponent(GameManager).IncreaseScore();
+		Manager.IncreaseScore();
 	}
 	
 	// collect 4 neighbors to remove same block sprites later
@@ -101,7 +102,7 @@ function InsertBlock () {
 	
 	var InsertFailed = false;
 	var Column = -1;
-	if (IsOneTryToInsertBlock === true) {
+	if (Manager.GetLastBlockStanding(false) === false) {
 		// one try to insert block to a random column (harder, classic 2008)
 		Column = Random.Range(0, BlockColumns);
 		if (IsFreeSpaceInColumn(Column) == false) {
@@ -119,7 +120,7 @@ function InsertBlock () {
 		}
 	}
 	if (InsertFailed === true) {
-		GameObject.Find("_GM").GetComponent(GameManager).GameOver();
+	    Manager.GameOver();
 		return;
 	}
 
