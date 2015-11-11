@@ -10,9 +10,15 @@ var SpriteID : int = -1; // used to detect neighbors by color
 var Column : int = -1;
 var Row : int = -1;
 
+var minY : float;
+
 private var Manager : BlockManager;
+private var FieldBGVec : Vector3;
 
 function Start() {
+    FieldBGVec = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.GetComponent.<Renderer>().bounds.size;
+    minY = transform.localPosition.y;
+
     Manager = GameObject.Find("_GM").GetComponent(BlockManager);
     Manager.SetBlockInGroup(gameObject);
 }
@@ -22,6 +28,16 @@ function Update () {
         if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) { // make block faster
             SetGravityScale(10);
         }
+    }
+    UpdateRow();
+}
+
+function UpdateRow() {
+    var ff : float =
+      (FieldBGVec.y / 2 + transform.localPosition.y + transform.GetComponent.<Renderer>().bounds.size.y/4) 
+      / transform.GetComponent.<Renderer>().bounds.size.y;
+    if (ff < Manager.BlockRows) {
+        Row = Mathf.Floor(ff);
     }
 }
 
@@ -47,9 +63,8 @@ function MoveBlock (ColumnDir : int, simulate : boolean) {
 	    if (simulate === false) {
 	        Column = Column + ColumnDir;
 	   	
-	        var FieldBGSize = GameObject.Find("_GM").GetComponent(GameSetup).FieldBG.GetComponent.<Renderer>().bounds.size;
-	        var ColumnSize = FieldBGSize.x / GameObject.Find("_GM").GetComponent(BlockManager).BlockColumns;
-	        transform.localPosition.x = (-1 * FieldBGSize.x / 2) + 
+	        var ColumnSize = FieldBGVec.x / GameObject.Find("_GM").GetComponent(BlockManager).BlockColumns;
+	        transform.localPosition.x = (-1 * FieldBGVec.x / 2) + 
               Column * ColumnSize + transform.GetComponent.<Renderer>().bounds.size.x/2;
 	   	
 	        GetComponent.<AudioSource>().clip = MoveBlockAudio;
@@ -60,6 +75,20 @@ function MoveBlock (ColumnDir : int, simulate : boolean) {
 	    return true;
 	}
 	return false;
+}
+
+function SetBlockPos(NewColumn : int, NewRow : int) {
+   
+    var ColumnSize = FieldBGVec.x / GameObject.Find("_GM").GetComponent(BlockManager).BlockColumns;
+    var RowSize = FieldBGVec.y / GameObject.Find("_GM").GetComponent(BlockManager).BlockRows;
+
+    var ColDiff : int = Column - NewColumn;
+    var RowDiff : int = Row - NewRow;
+
+    transform.localPosition.x = transform.localPosition.x - ColDiff * ColumnSize;
+    transform.localPosition.y = transform.localPosition.y - RowDiff * RowSize;
+    Column = NewColumn;
+    Row = NewRow;
 }
 
 function LateUpdate () {

@@ -27,8 +27,7 @@ function Update() {
 		
 	} else if (Input.inputString == "\b") {
 		// reset game
-		LocalScore = 0;
-		GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
+	    Reset();
 		
 	} else if (Input.GetKey("f5")) {
 		// show / hide highscores table
@@ -36,6 +35,11 @@ function Update() {
 	} else if (Input.GetKey("f8")) {
 	    ShowSettings = true;
 	}
+}
+
+function Reset() {
+    LocalScore = 0;
+    GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
 }
 
 function IncreaseScore() {
@@ -136,6 +140,7 @@ function AddSettingsForm(windowID : int) {
 
     GUILayout.BeginHorizontal();
     if (GUILayout.Button("Close")) {
+        Reset();
         ShowSettings = false;
     }
     GUILayout.EndHorizontal();

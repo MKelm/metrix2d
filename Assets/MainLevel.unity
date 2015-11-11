@@ -286,6 +286,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: c87851b719879634babd970e4b5719f2, type: 3}
   - {fileID: 21300000, guid: 34bca6a66856dee449c5d86cfcf17d5d, type: 3}
   - {fileID: 21300000, guid: bf01168fc8d0631488305427de323d42, type: 3}
+  BlockRows: -1
 --- !u!82 &725737006
 AudioSource:
   m_ObjectHideFlags: 0
@@ -383,8 +384,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb6af0819ce102f4a9328cd9acb2699b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  RotateGroupAudio: {fileID: 8300000, guid: 72b5029d7a5a2ee4caf2788bd3deeff6, type: 3}
   LastIndex: 0
   Length: 3
+  DefaultLength: 3
   IsFalling: 1
   Moveable: 1
   Column: -1

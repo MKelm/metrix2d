@@ -5,7 +5,7 @@ var BlockColumns : int = 8;
 
 var BlockSprites : Sprite[];
 
-private var BlockRows : int = -1;
+var BlockRows : int = -1;
 private var BlockInRows : GameObject[,];
 private var BlockGravityScale : float = 0.1f;
 
@@ -28,6 +28,10 @@ function SetBlockReachedGround() {
 
 function SetBlockInGroup(BlockObj : GameObject) {
     GroupControl.AddBlock(BlockObj);
+}
+
+    function BlockPosFree(Column : int, Row : int) {
+    return BlockInRows[Column, Row] == null;
 }
 
 function Update () {
@@ -111,11 +115,10 @@ function CheckNeighbors(
 }
 
 function InsertBlock () {
-	var MaxBlockColumns = BlockColumns;
 	var BlockGroupRotation = Manager.GetBlockGroupRotation(false);
 
 	if (BlockGroupRotation) {
-	    MaxBlockColumns = MaxBlockColumns - GroupControl.Length;
+        GroupControl.Length = GroupControl.DefaultLength;
 	} else {
 	    GroupControl.Length = 1;
 	}
@@ -127,7 +130,7 @@ function InsertBlock () {
 	var StartColumn = -1;
 	if (Manager.GetLastBlockStanding(false) === false) {
 		// one try to insert block to a random column (harder, classic 2008)
-	    StartColumn = Random.Range(0, MaxBlockColumns);
+	    StartColumn = Random.Range(0, BlockColumns - GroupControl.Length + 1);
 	    if (IsFreeSpaceInColumns(StartColumn, GroupControl.Length) == false) {
 			InsertFailed = true;
 		}
@@ -135,7 +138,7 @@ function InsertBlock () {
 		// search for free column, max. 100 tries (easier, new 2014)
 		var Iteration = 0;
 		do {
-		    StartColumn = Random.Range(0, MaxBlockColumns);
+		    StartColumn = Random.Range(0, BlockColumns - GroupControl.Length + 1);
 		  Iteration++;
 		} while (Iteration < 100 && IsFreeSpaceInColumns(StartColumn, GroupControl.Length) == false);
 		if (Iteration >= 100) { 
@@ -171,14 +174,16 @@ function InsertBlock () {
 	    newBlock.GetComponent.<Rigidbody2D>().gravityScale = BlockGravityScale;
 
 	    var CurrentBlockControl = newBlock.GetComponent(BlockControl);
+
+	    if (BlockRows == -1) {
+	        BlockRows = Mathf.Floor(FieldBGSize.y / newBlock.GetComponent.<Renderer>().bounds.size.y);
+	        BlockInRows = new GameObject[BlockColumns, BlockRows];
+	    }
+
 	    CurrentBlockControl.SpriteID = BlockSpriteId;
 	    CurrentBlockControl.Column = (StartColumn + i);
+	    CurrentBlockControl.Row = BlockRows - 1;
 	    CurrentBlockControl.FallsFromTop = true;	    
-	}
-
-	if (BlockRows == -1) {
-	    BlockRows = Mathf.Floor(FieldBGSize.y / newBlock.GetComponent.<Renderer>().bounds.size.y);
-	    BlockInRows = new GameObject[BlockColumns, BlockRows];
 	}
 
 	BlockGravityScale += 0.02;
