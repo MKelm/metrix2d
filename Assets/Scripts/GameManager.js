@@ -16,7 +16,7 @@ private var ScoreSubmitted : boolean = false;
 private var ShowHighscores : int = 0;
 private var ShowSettings : boolean = false;
 
-private var LastBlockStanding : boolean = false; // default false, classic 2008
+private var EasyRider : boolean = false; // default false, classic 2008
 private var BlockGroupRotation : boolean = false; // default true, classic 2008
 
 private var TimeLimit : int = 99;
@@ -24,7 +24,7 @@ private var LocalSeconds : float = 0;
 private var Date = new Date();
 
 function Awake() {
-    LastBlockStanding = GetLastBlockStanding(true);
+    EasyRider = GetEasyRider(true);
     BlockGroupRotation = GetBlockGroupRotation(true);
     TimeLimit = GetTimeLimit(true);
 }
@@ -91,17 +91,17 @@ function GetTimeLimit(prefs : boolean) {
         }
     }
 
-function GetLastBlockStanding(prefs : boolean) {
+        function GetEasyRider(prefs : boolean) {
     if (prefs === true) {
-        LastBlockStanding = PlayerPrefs.GetInt("settingLastBlockStanding") == 1;
+        EasyRider = PlayerPrefs.GetInt("settingEasyRider") == 1;
     }
-    return LastBlockStanding;
+    return EasyRider;
 }
 
-function SetLastBlockStanding(newValue : boolean, prefs : boolean) {
-    LastBlockStanding = newValue;
+ function SetEasyRider(newValue : boolean, prefs : boolean) {
+    EasyRider = newValue;
     if (prefs === true) {
-        PlayerPrefs.SetInt("settingLastBlockStanding", LastBlockStanding ? 1 : 0);
+        PlayerPrefs.SetInt("settingEasyRider", EasyRider ? 1 : 0);
     }
 }
 
@@ -162,8 +162,8 @@ function AddSettingsForm(windowID : int) {
     GUILayout.BeginVertical();
 
     GUILayout.BeginHorizontal();
-    SetLastBlockStanding(
-        GUI.Toggle(Rect(15, 20, Screen.width/4, 20), LastBlockStanding, "Last Block Standing"),
+    SetEasyRider(
+        GUI.Toggle(Rect(15, 20, Screen.width/4, 20), EasyRider, "Easy Rider"),
         true
     );
     GUILayout.EndHorizontal();

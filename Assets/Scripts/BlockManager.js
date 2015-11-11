@@ -128,7 +128,7 @@ function InsertBlock () {
 
 	var InsertFailed = false;
 	var StartColumn = -1;
-	if (Manager.GetLastBlockStanding(false) === false) {
+	if (Manager.GetEasyRider(false) === false) {
 		// one try to insert block to a random column (harder, classic 2008)
 	    StartColumn = Random.Range(0, BlockColumns - GroupControl.Length + 1);
 	    if (IsFreeSpaceInColumns(StartColumn, GroupControl.Length) == false) {
