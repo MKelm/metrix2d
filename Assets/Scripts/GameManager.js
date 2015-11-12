@@ -17,7 +17,7 @@ private var ShowHighscores : int = 0;
 private var ShowSettings : boolean = false;
 
 private var EasyRider : boolean = false; // default false, classic 2008
-private var BlockGroupRotation : boolean = false; // default true, classic 2008
+private var GroupingAndRotation : boolean = false; // default true, classic 2008
 
 private var TimeLimit : int = 99;
 private var LocalSeconds : float = 0;
@@ -25,7 +25,7 @@ private var Date = new Date();
 
 function Awake() {
     EasyRider = GetEasyRider(true);
-    BlockGroupRotation = GetBlockGroupRotation(true);
+    GroupingAndRotation = GetGroupingAndRotation(true);
     TimeLimit = GetTimeLimit(true);
 }
 
@@ -105,17 +105,17 @@ function GetTimeLimit(prefs : boolean) {
     }
 }
 
-function GetBlockGroupRotation(prefs : boolean) {
+function GetGroupingAndRotation(prefs : boolean) {
     if (prefs === true) {
-        BlockGroupRotation = PlayerPrefs.GetInt("settingBlockGroupRotation") == 1;
+        GroupingAndRotation = PlayerPrefs.GetInt("settingGroupingAndRotation") == 1;
     }
-    return BlockGroupRotation;
+    return GroupingAndRotation;
 }
 
-function SetBlockGroupRotation(newValue : boolean, prefs : boolean) {
-    BlockGroupRotation = newValue;
+function SetGroupingAndRotation(newValue : boolean, prefs : boolean) {
+    GroupingAndRotation = newValue;
     if (prefs === true) {
-        PlayerPrefs.SetInt("settingBlockGroupRotation", BlockGroupRotation ? 1 : 0);
+        PlayerPrefs.SetInt("settingGroupingAndRotation", GroupingAndRotation ? 1 : 0);
     }
 }
 
@@ -169,8 +169,8 @@ function AddSettingsForm(windowID : int) {
     GUILayout.EndHorizontal();
 
     GUILayout.BeginHorizontal();
-    SetBlockGroupRotation(
-        GUI.Toggle(Rect(15, 20 + 20, Screen.width/4, 20), BlockGroupRotation, "Block Group & Rotation"),
+    SetGroupingAndRotation(
+        GUI.Toggle(Rect(15, 20 + 20, Screen.width/4, 20), GroupingAndRotation, "Grouping & Rotation"),
         true
     );
     GUILayout.EndHorizontal();

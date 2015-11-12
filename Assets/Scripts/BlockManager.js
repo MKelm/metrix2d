@@ -115,9 +115,8 @@ function CheckNeighbors(
 }
 
 function InsertBlock () {
-	var BlockGroupRotation = Manager.GetBlockGroupRotation(false);
 
-	if (BlockGroupRotation) {
+	if (Manager.GetGroupingAndRotation(false)) {
         GroupControl.Length = GroupControl.DefaultLength;
 	} else {
 	    GroupControl.Length = 1;
@@ -152,10 +151,8 @@ function InsertBlock () {
 
 	var FieldBGSize = _GS.FieldBG.GetComponent.<Renderer>().bounds.size;
 	var ColumnSize = FieldBGSize.x / BlockColumns;
-	
-	var BlockInsertRepeat = (BlockGroupRotation) ? GroupControl.Length : 1;
 
-	for (var i = 0; i < BlockInsertRepeat; i++) {
+	for (var i = 0; i < GroupControl.Length; i++) {
 	    var newBlock = Instantiate (BlockPrefab, new Vector3(0f, 0f, 0f), Quaternion.Euler(Vector3(0, 0, 0)) );
 	    newBlock.localScale.x = _GS.FieldBG.localScale.x / BlockColumns;
 	    newBlock.localScale.y = newBlock.localScale.x;
