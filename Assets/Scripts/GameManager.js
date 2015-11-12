@@ -19,22 +19,26 @@ private var ShowSettings : boolean = false;
 private var EasyRider : boolean = false; // default false, classic 2008
 private var GroupingAndRotation : boolean = false; // default true, classic 2008
 
+//private var HasRoundsChallenge : boolean = false;
+//private var RoundsChallengeMaxRounds : int = 9;
+
 private var HasTimeLimit : boolean = false;
-private var TimeLimit : int = 99;
+private var TimeLimitMaxTime : int = 99;
 private var LocalSeconds : float = 0;
 private var Date = new Date();
 
 function Awake() {
     EasyRider = GetEasyRider(true);
     GroupingAndRotation = GetGroupingAndRotation(true);
-    TimeLimit = GetTimeLimit(true);
+    HasTimeLimit = GetHasTimeLimit(true);
+    TimeLimitMaxTime = GetTimeLimitMaxTime(true);
 }
 
 function Update() {
     if (ShowSettings != true || ShowHighscores > 0) {
         if (ShowHighscores == 0) {
             LocalSeconds += Time.deltaTime;
-            if (HasTimeLimit && TimeLimit > 0 && LocalSeconds > TimeLimit) {
+            if (HasTimeLimit && TimeLimitMaxTime > 0 && LocalSeconds > TimeLimitMaxTime) {
                 GameOver();
             }
         }
@@ -92,17 +96,17 @@ function SetHasTimeLimit(newValue : boolean, prefs : boolean) {
     }
 }
 
-function GetTimeLimit(prefs : boolean) {
+function GetTimeLimitMaxTime(prefs : boolean) {
     if (prefs === true) {
-        TimeLimit = PlayerPrefs.GetInt("settingTimeLimit");
+        TimeLimitMaxTime = PlayerPrefs.GetInt("settingTimeLimitMaxTime");
     }
-    return TimeLimit;
+    return TimeLimitMaxTime;
 }
 
-function SetTimeLimit(newValue : int, prefs : boolean) {
-    TimeLimit = newValue;
+function SetTimeLimitMaxTime(newValue : int, prefs : boolean) {
+    TimeLimitMaxTime = newValue;
     if (prefs === true) {
-        PlayerPrefs.SetInt("settingTimeLimit", TimeLimit);
+        PlayerPrefs.SetInt("settingTimeLimitMaxTime", TimeLimitMaxTime);
     }
 }
 
@@ -164,10 +168,10 @@ function OnGUI() {
 			new Rect(Screen.width/2-ScoreBoxSizeX/2, ScoreBoxOffsetY, ScoreBoxSizeX, ScoreBoxSizeY), 
 			"Score: " + LocalScore
 		);
-		if (HasTimeLimit && TimeLimit > 0) {
+		if (HasTimeLimit && TimeLimitMaxTime > 0) {
 		    GUI.Box (
 			    new Rect(Screen.width/2-TLBoxSizeX/2, Screen.height - TLBoxSizeY - ScoreBoxSizeY/2, TLBoxSizeX, TLBoxSizeY), 
-			    "Time Limit: " + Mathf.Floor(TimeLimit - LocalSeconds)
+			    "Time Limit: " + Mathf.Floor(TimeLimitMaxTime - LocalSeconds)
 		    );
 		}
 	}
@@ -200,9 +204,9 @@ function AddSettingsForm(windowID : int) {
     GUILayout.Space(3 * 25);
     GUILayout.BeginHorizontal();
     try {
-        SetTimeLimit( int.Parse(GUILayout.TextField(""+ TimeLimit)), true);
+        SetTimeLimitMaxTime( int.Parse(GUILayout.TextField(""+ TimeLimitMaxTime)), true);
     } catch(err) {
-        SetTimeLimit(0, true);
+        SetTimeLimitMaxTime(0, true);
     }
     
     GUILayout.EndHorizontal();
