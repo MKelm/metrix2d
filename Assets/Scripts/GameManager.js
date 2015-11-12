@@ -19,6 +19,7 @@ private var ShowSettings : boolean = false;
 private var EasyRider : boolean = false; // default false, classic 2008
 private var GroupingAndRotation : boolean = false; // default true, classic 2008
 
+private var HasTimeLimit : boolean = false;
 private var TimeLimit : int = 99;
 private var LocalSeconds : float = 0;
 private var Date = new Date();
@@ -33,7 +34,7 @@ function Update() {
     if (ShowSettings != true || ShowHighscores > 0) {
         if (ShowHighscores == 0) {
             LocalSeconds += Time.deltaTime;
-            if (TimeLimit > 0 && LocalSeconds > TimeLimit) {
+            if (HasTimeLimit && TimeLimit > 0 && LocalSeconds > TimeLimit) {
                 GameOver();
             }
         }
@@ -77,6 +78,20 @@ function GameOver() {
 	ShowHighscores = 1;
 }
 
+function GetHasTimeLimit(prefs : boolean) {
+    if (prefs === true) {
+        HasTimeLimit = PlayerPrefs.GetInt("settingHasTimeLimit") == 1;
+    }
+    return HasTimeLimit;
+}
+
+function SetHasTimeLimit(newValue : boolean, prefs : boolean) {
+    HasTimeLimit = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetInt("settingHasTimeLimit", HasTimeLimit ? 1 : 0);
+    }
+}
+
 function GetTimeLimit(prefs : boolean) {
     if (prefs === true) {
         TimeLimit = PlayerPrefs.GetInt("settingTimeLimit");
@@ -84,14 +99,14 @@ function GetTimeLimit(prefs : boolean) {
     return TimeLimit;
 }
 
-    function SetTimeLimit(newValue : int, prefs : boolean) {
-        TimeLimit = newValue;
-        if (prefs === true) {
-            PlayerPrefs.SetInt("settingTimeLimit", TimeLimit);
-        }
+function SetTimeLimit(newValue : int, prefs : boolean) {
+    TimeLimit = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetInt("settingTimeLimit", TimeLimit);
     }
+}
 
-        function GetEasyRider(prefs : boolean) {
+function GetEasyRider(prefs : boolean) {
     if (prefs === true) {
         EasyRider = PlayerPrefs.GetInt("settingEasyRider") == 1;
     }
@@ -149,7 +164,7 @@ function OnGUI() {
 			new Rect(Screen.width/2-ScoreBoxSizeX/2, ScoreBoxOffsetY, ScoreBoxSizeX, ScoreBoxSizeY), 
 			"Score: " + LocalScore
 		);
-		if (TimeLimit > 0) {
+		if (HasTimeLimit && TimeLimit > 0) {
 		    GUI.Box (
 			    new Rect(Screen.width/2-TLBoxSizeX/2, Screen.height - TLBoxSizeY - ScoreBoxSizeY/2, TLBoxSizeX, TLBoxSizeY), 
 			    "Time Limit: " + Mathf.Floor(TimeLimit - LocalSeconds)
@@ -163,22 +178,27 @@ function AddSettingsForm(windowID : int) {
 
     GUILayout.BeginHorizontal();
     SetEasyRider(
-        GUI.Toggle(Rect(15, 20, Screen.width/4, 20), EasyRider, "Easy Rider"),
+        GUI.Toggle(Rect(15, 20, Screen.width/4, 20), EasyRider, " Easy Rider"),
         true
     );
     GUILayout.EndHorizontal();
 
     GUILayout.BeginHorizontal();
     SetGroupingAndRotation(
-        GUI.Toggle(Rect(15, 20 + 20, Screen.width/4, 20), GroupingAndRotation, "Grouping & Rotation"),
+        GUI.Toggle(Rect(15, 20 + 25, Screen.width/4, 20), GroupingAndRotation, " Grouping & Rotation"),
         true
     );
     GUILayout.EndHorizontal();
 
-    GUILayout.Space(2 * 20);
-
     GUILayout.BeginHorizontal();
-    GUILayout.Label("Time Limit", GUILayout.Width(80));
+    SetHasTimeLimit(
+        GUI.Toggle(Rect(15, 45 + 25, Screen.width/4, 20), HasTimeLimit, " Time Limit"),
+        true
+    );
+    GUILayout.EndHorizontal();
+
+    GUILayout.Space(3 * 25);
+    GUILayout.BeginHorizontal();
     try {
         SetTimeLimit( int.Parse(GUILayout.TextField(""+ TimeLimit)), true);
     } catch(err) {
