@@ -16,11 +16,13 @@ private var ScoreSubmitted : boolean = false;
 private var ShowHighscores : int = 0;
 private var ShowSettings : boolean = false;
 
+private var GameTime : float = 0;
+
 private var EasyRider : boolean = false; // default false, classic 2008
 private var GroupingAndRotation : boolean = false; // default true, classic 2008
 
-//private var HasRoundsChallenge : boolean = false;
-//private var RoundsChallengeMaxRounds : int = 9;
+private var HasRound2Round : boolean = false;
+private var Round2RoundMaxRounds : int = 9;
 
 private var HasTimeLimit : boolean = false;
 private var TimeLimitMaxTime : int = 99;
@@ -28,13 +30,25 @@ private var LocalSeconds : float = 0;
 private var Date = new Date();
 
 function Awake() {
+    GameTime = GetGameTime(true);
+
     EasyRider = GetEasyRider(true);
     GroupingAndRotation = GetGroupingAndRotation(true);
+
     HasTimeLimit = GetHasTimeLimit(true);
     TimeLimitMaxTime = GetTimeLimitMaxTime(true);
+
+    HasRound2Round = GetHasRound2Round(true);
+    Round2RoundMaxRounds = GetRound2RoundMaxRounds(true);
+}
+
+function OnDisable() {
+    SetGameTime(GameTime, true);
 }
 
 function Update() {
+    GameTime += Time.deltaTime;
+
     if (ShowSettings != true || ShowHighscores > 0) {
         if (ShowHighscores == 0) {
             LocalSeconds += Time.deltaTime;
@@ -42,7 +56,6 @@ function Update() {
                 GameOver();
             }
         }
-
     
         if (Input.GetKey("escape")) {
             Application.Quit();
@@ -82,8 +95,50 @@ function GameOver() {
 	ShowHighscores = 1;
 }
 
-function GetHasTimeLimit(prefs : boolean) {
+function GetGameTime(prefs : boolean) {
     if (prefs === true) {
+        GameTime = PlayerPrefs.GetFloat("gameTime");
+    }
+    return GameTime;
+}
+
+function SetGameTime(newValue : float, prefs : boolean) {
+    GameTime = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetFloat("gameTime", GameTime);
+    }
+}
+
+function GetHasRound2Round(prefs : boolean) {
+    if (prefs === true && GameTime > 0) {
+        HasRound2Round = PlayerPrefs.GetInt("settingHasRound2Round") == 1;
+    }
+    return HasRound2Round;
+}
+
+function SetHasRound2Round(newValue : boolean, prefs : boolean) {
+    HasRound2Round = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetInt("settingHasRound2Round", HasRound2Round ? 1 : 0);
+    }
+}
+
+function GetRound2RoundMaxRounds(prefs : boolean) {
+    if (prefs === true && GameTime > 0) {
+        Round2RoundMaxRounds = PlayerPrefs.GetInt("settingRound2RoundMaxRounds");
+    }
+    return Round2RoundMaxRounds;
+}
+
+function SetRound2RoundMaxRounds(newValue : int, prefs : boolean) {
+    Round2RoundMaxRounds = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetInt("settingRound2RoundMaxRounds", Round2RoundMaxRounds);
+    }
+}
+
+function GetHasTimeLimit(prefs : boolean) {
+    if (prefs === true && GameTime > 0) {
         HasTimeLimit = PlayerPrefs.GetInt("settingHasTimeLimit") == 1;
     }
     return HasTimeLimit;
@@ -97,7 +152,7 @@ function SetHasTimeLimit(newValue : boolean, prefs : boolean) {
 }
 
 function GetTimeLimitMaxTime(prefs : boolean) {
-    if (prefs === true) {
+    if (prefs === true && GameTime > 0) {
         TimeLimitMaxTime = PlayerPrefs.GetInt("settingTimeLimitMaxTime");
     }
     return TimeLimitMaxTime;
@@ -111,7 +166,7 @@ function SetTimeLimitMaxTime(newValue : int, prefs : boolean) {
 }
 
 function GetEasyRider(prefs : boolean) {
-    if (prefs === true) {
+    if (prefs === true && GameTime > 0) {
         EasyRider = PlayerPrefs.GetInt("settingEasyRider") == 1;
     }
     return EasyRider;
@@ -125,7 +180,7 @@ function GetEasyRider(prefs : boolean) {
 }
 
 function GetGroupingAndRotation(prefs : boolean) {
-    if (prefs === true) {
+    if (prefs === true && GameTime > 0) {
         GroupingAndRotation = PlayerPrefs.GetInt("settingGroupingAndRotation") == 1;
     }
     return GroupingAndRotation;
@@ -137,7 +192,6 @@ function SetGroupingAndRotation(newValue : boolean, prefs : boolean) {
         PlayerPrefs.SetInt("settingGroupingAndRotation", GroupingAndRotation ? 1 : 0);
     }
 }
-
 
 function OnGUI() {
 	if (ShowHighscores == 1) { // add highscore window
@@ -208,7 +262,22 @@ function AddSettingsForm(windowID : int) {
     } catch(err) {
         SetTimeLimitMaxTime(0, true);
     }
-    
+    GUILayout.EndHorizontal();
+
+    GUILayout.BeginHorizontal();
+    SetHasRound2Round(
+        GUI.Toggle(Rect(15, 100 + 25, Screen.width/4, 20), HasRound2Round, " Round2Round"),
+        true
+    );
+    GUILayout.EndHorizontal();
+
+    GUILayout.Space(25);
+    GUILayout.BeginHorizontal();
+    try {
+        SetRound2RoundMaxRounds( int.Parse(GUILayout.TextField(""+ Round2RoundMaxRounds)), true);
+    } catch(err) {
+        SetRound2RoundMaxRounds(0, true);
+    }
     GUILayout.EndHorizontal();
 
     GUILayout.Space(5);
