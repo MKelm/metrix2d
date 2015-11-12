@@ -144,7 +144,7 @@ function InsertBlock () {
 		}
 	}
 	if (InsertFailed === true) {
-	    Manager.GameOver();
+	    Manager.GameOver(true);
 		return;
 	}
 

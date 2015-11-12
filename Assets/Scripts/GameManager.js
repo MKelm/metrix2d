@@ -27,8 +27,11 @@ private var GroupingAndRotation : boolean = false; // default true, classic 2008
 
 private var LocalRoundScores : int[];
 private var LocalRound : int = 0;
+private var LocalPrevRoundsScore : int = 0;
 private var HasRound2Round : boolean = false;
 private var Round2RoundMaxRounds : int = 9;
+
+private var BeatYourself : boolean = false;
 
 private var HasTimeLimit : boolean = false;
 private var TimeLimitMaxTime : int = 99;
@@ -46,6 +49,8 @@ function Awake() {
 
     HasRound2Round = GetHasRound2Round(true);
     Round2RoundMaxRounds = GetRound2RoundMaxRounds(true);
+
+    BeatYourself = GetBeatYourself(true);
 }
 
 function OnDisable() {
@@ -56,7 +61,7 @@ function Update() {
     GameTime += Time.deltaTime;
     LocalSeconds += Time.deltaTime;
     if (!IsGameOver && HasTimeLimit && TimeLimitMaxTime > 0 && LocalSeconds > TimeLimitMaxTime) {
-        GameOver();
+        GameOver(true);
     }
 
     if (ShowSettings != true || !IsGameOver) {
@@ -77,26 +82,38 @@ function Update() {
 }
 
 function UpdateScores(nextRound : int) {
+    var roundOk = true;
     if (nextRound == 0) {
         LocalScore = 0;
+        LocalPrevRoundsScore = 0;
     } else if (HasRound2Round && Round2RoundMaxRounds > 0) {
-        var PrevScore = 0;
+        LocalPrevRoundsScore = 0;
         if (LocalRound > 0) {
             for (var i = 0; i < LocalRound; i++)
-                PrevScore += LocalRoundScores[i];
+                LocalPrevRoundsScore += LocalRoundScores[i];
         }
         if (LocalRound < Round2RoundMaxRounds) {
-            LocalRoundScores[LocalRound] = LocalScore - PrevScore;
+            LocalRoundScores[LocalRound] = LocalScore - LocalPrevRoundsScore;
+            LocalPrevRoundsScore = LocalPrevRoundsScore + LocalRoundScores[LocalRound];
+        }
+        if (LocalRound > 0 && LocalRound < Round2RoundMaxRounds) {
+            if (BeatYourself && LocalRoundScores[LocalRound] <= LocalRoundScores[LocalRound-1]) {
+                roundOk = false;
+            }
         }
     }
+    return roundOk;
 }
 
 function Reset(nextRound : int) {
-    UpdateScores(nextRound);
-    LocalRound = nextRound;
-    LocalSeconds = 0;
-    IsGameOver = false;
-    GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
+    if (UpdateScores(nextRound)) {
+        LocalRound = nextRound;
+        LocalSeconds = 0;
+        IsGameOver = false;
+        GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
+    } else {
+        GameOver(false);
+    }
 }
 
 function IncreaseScore() {
@@ -109,16 +126,19 @@ function IncreaseScore() {
     }
 }
 
-function GameOver() {
+function GameOver(checkRound : boolean) {
     if (!IsGameOver) {
-        if (HasRound2Round && Round2RoundMaxRounds > 0) {
-            if (LocalRound < Round2RoundMaxRounds - 1) {
-                Reset(LocalRound + 1);
-                return;
-            } else {
-                UpdateScores(LocalRound + 1);
+        if (checkRound == true) {
+            if (HasRound2Round && Round2RoundMaxRounds > 0) {
+                if (LocalRound < Round2RoundMaxRounds - 1) {
+                    Reset(LocalRound + 1);
+                    return;
+                } else {
+                    UpdateScores(LocalRound + 1);
+                }
             }
-        } 
+        }
+        
 
         GetComponent.<AudioSource>().clip = GameOverAudio;
         GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
@@ -126,6 +146,20 @@ function GameOver() {
 	    
         IsGameOver = true;
         ShowHighscores = 1;
+    }
+}
+
+function GetBeatYourself(prefs : boolean) {
+    if (prefs === true && GameTime > 0) {
+        BeatYourself = PlayerPrefs.GetInt("settingBeatYourself") == 1;
+    }
+    return BeatYourself;
+}
+
+function SetBeatYourself(newValue : boolean, prefs : boolean) {
+    BeatYourself = newValue;
+    if (prefs === true) {
+        PlayerPrefs.SetInt("settingBeatYourself", BeatYourself ? 1 : 0);
     }
 }
 
@@ -253,15 +287,17 @@ function OnGUI() {
 		);
 	    GUILayout.Window(0, WindowRect1, AddHighscoresTable, "Highscores" );
 	} else if (ShowSettings == true) {
-	    var WindowHeight2 = 1*35;
+	    var WindowHeight2 = 7*25;
 	    var WindowRect2 = Rect( 
 			Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight2/2, Screen.width/2, WindowHeight2 
 		);
 	    GUILayout.Window(0, WindowRect2, AddSettingsForm, "Settings" );
 	} else { // current score box
+	    var boxX = (BeatYourself && LocalRound > 0) ? ScoreBoxSizeX * 2 : ScoreBoxSizeX;
 		GUI.Box (
-			new Rect(Screen.width/2-ScoreBoxSizeX/2, ScoreBoxOffsetY, ScoreBoxSizeX, ScoreBoxSizeY), 
-			"Score: " + LocalScore
+			new Rect(Screen.width/2-boxX/2, ScoreBoxOffsetY, boxX, ScoreBoxSizeY), 
+			(BeatYourself && LocalRound > 0) 
+            ? "Score: " + LocalScore + " (" + (LocalScore - LocalPrevRoundsScore) + " / "+ LocalRoundScores[LocalRound-1] + ")":  "Score: " + LocalScore
 		);
 		var TwoBottomBoxes = (HasRound2Round && HasTimeLimit);
 		if (HasRound2Round && Round2RoundMaxRounds > 0) {
@@ -300,37 +336,40 @@ function AddSettingsForm(windowID : int) {
 
     GUILayout.BeginHorizontal();
     SetHasTimeLimit(
-        GUI.Toggle(Rect(15, 45 + 25, Screen.width/4, 20), HasTimeLimit, " Time Limit"),
+        GUI.Toggle(Rect(15, 45 + 25, Screen.width/4, 20), HasTimeLimit, " Time Limit, with max. time:"),
         true
     );
     GUILayout.EndHorizontal();
 
-    GUILayout.Space(3 * 25);
+    GUILayout.Space(3 * 25); 
     GUILayout.BeginHorizontal();
-    try {
-        SetTimeLimitMaxTime( int.Parse(GUILayout.TextField(""+ TimeLimitMaxTime)), true);
-    } catch(err) {
-        SetTimeLimitMaxTime(0, true);
-    }
+
+    SetTimeLimitMaxTime(Mathf.Round(GUI.HorizontalSlider(new Rect(15, 95, Screen.width/3-15, 20), TimeLimitMaxTime, 0.0F, 99.0F)), true);
+    GUI.Label(new Rect(Screen.width/3+15, 90, 50, 20), ""+GetTimeLimitMaxTime(false));
     GUILayout.EndHorizontal();
 
     GUILayout.BeginHorizontal();
     SetHasRound2Round(
-        GUI.Toggle(Rect(15, 100 + 25, Screen.width/4, 20), HasRound2Round, " Round2Round"),
+        GUI.Toggle(Rect(15, 85 + 25, Screen.width/3, 20), HasRound2Round, " Round2Round, with max. rounds:"),
         true
     );
     GUILayout.EndHorizontal();
 
     GUILayout.Space(25);
     GUILayout.BeginHorizontal();
-    try {
-        SetRound2RoundMaxRounds( int.Parse(GUILayout.TextField(""+ Round2RoundMaxRounds)), true);
-    } catch(err) {
-        SetRound2RoundMaxRounds(0, true);
-    }
+
+    SetRound2RoundMaxRounds(Mathf.Round(GUI.HorizontalSlider(new Rect(15, 135, Screen.width/3-15, 20), Round2RoundMaxRounds, 0.0F, 25.0F)), true);
+    GUI.Label(new Rect(Screen.width/3+15, 130, 50, 20), ""+GetRound2RoundMaxRounds(false));
     GUILayout.EndHorizontal();
 
-    GUILayout.Space(5);
+    GUILayout.BeginHorizontal();
+    SetBeatYourself(
+        GUI.Toggle(Rect(15, 125 + 25, Screen.width/4, 20), BeatYourself, " Beat Yourself"),
+        true
+    );
+    GUILayout.EndHorizontal();
+
+    GUILayout.Space(55);
 
     GUILayout.BeginHorizontal();
     if (GUILayout.Button("Close")) {
