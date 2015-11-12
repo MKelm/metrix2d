@@ -91,6 +91,8 @@ function SetBlockPos(NewColumn : int, NewRow : int) {
 function LateUpdate () {
 	if (IsFalling == true) {
 		GetComponent.<Rigidbody2D>().isKinematic = false;
+	} else {
+	    GetComponent.<Rigidbody2D>().isKinematic = true;
 	}
 }
 

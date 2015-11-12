@@ -12,7 +12,15 @@ var FieldBGScreenAmount : float = 0.5f;
 
 var FullBG : Transform;
 
+var LogoUICanvas : Canvas;
+var LogoDisplayTime = 10;
+
+private var LogoUICanvasGroup : CanvasGroup;
+private var Manager : GameManager;
+
 function Awake () {
+    Manager = GameObject.Find("_GM").GetComponent(GameManager);
+
 	//Move each wall to its edge location
 	topWall.size = new Vector2 ( 
 		mainCam.ScreenToWorldPoint (new Vector3(Screen.width * 2f, 0f, 0f)).x, 1f
@@ -57,4 +65,24 @@ function Awake () {
 	FullBG.localScale.x = (rightBorderX - leftBorderX) / FullBG.GetComponent.<Renderer>().bounds.size.x;
 	FullBG.localScale.y = (bottomWall.offset.y - topWall.offset.y + 1f) / FullBG.GetComponent.<Renderer>().bounds.size.y;
 	
+}
+
+function Start() {
+    LogoFadeOut();
+}
+
+function LogoFadeOut() {
+    LogoUICanvasGroup = LogoUICanvas.GetComponent(CanvasGroup);
+    var duration : float = 2.5f;
+    var currentTime : float = 0f;
+    var alpha : float = 0f;
+    while (currentTime < duration)
+    {
+        alpha = Mathf.Lerp(1f, 0f, currentTime/duration);
+        LogoUICanvasGroup.alpha = alpha;
+        currentTime += Time.deltaTime;
+        yield;
+    }
+    LogoUICanvas.enabled = false;
+    Manager.Active = true;
 }

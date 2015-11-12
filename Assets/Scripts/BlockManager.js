@@ -12,10 +12,17 @@ private var BlockGravityScale : float = 0.1f;
 private var GroupControl : BlockGroupControl;
 
 private var Manager : GameManager;
+private var Setup : GameSetup;
+
+private var HasUpdates = true;
 
 function Start () {
+    Setup = GameObject.Find("_GM").GetComponent(GameSetup);
     Manager = GameObject.Find("_GM").GetComponent(GameManager);
     GroupControl = GameObject.Find("_GM").GetComponent(BlockGroupControl);
+    do {
+        yield;
+    } while (Manager.Active == false);
     InsertBlock();
 }
 
@@ -34,19 +41,27 @@ function BlockPosFree(Column : int, Row : int) {
     return BlockInRows[Column, Row] == null;
 }
 
+   
+
 function Update () {
-	if (BlockRows > -1) {
-		// check / change grid position of blocks which falls from bottom to top
-		for (var c = 0; c < BlockColumns; c++) {
-			for (var r = 0; r < BlockRows - 1; r++) {
-				if (BlockInRows[c, r] == null && BlockInRows[c, r+1] != null) {
-                    // set block to fall mode if possible
-					BlockInRows[c, r+1].GetComponent(BlockControl).IsFalling = true;
-					BlockInRows[c, r+1] = null;
-				}
-			}
-		}
-	}
+    if (Manager.Paused == HasUpdates) {
+        HasUpdates = !Manager.Paused;
+        GroupControl.SetIsFalling(HasUpdates);
+    }
+    if (HasUpdates) { 
+        if (BlockRows > -1) {
+            // check / change grid position of blocks which falls from bottom to top
+            for (var c = 0; c < BlockColumns; c++) {
+                for (var r = 0; r < BlockRows - 1; r++) {
+                    if (BlockInRows[c, r] == null && BlockInRows[c, r+1] != null) {
+                        // set block to fall mode if possible
+                        BlockInRows[c, r+1].GetComponent(BlockControl).IsFalling = true;
+                        BlockInRows[c, r+1] = null;
+                    }
+                }
+            }
+        }
+    }
 }
 
 function ResetBlockField () {
@@ -122,7 +137,7 @@ function InsertBlock () {
 	}
 	GroupControl.InitBlocks();
 
-	var _GS = GameObject.Find("_GM").GetComponent(GameSetup);
+	
 
 	var InsertFailed = false;
 	var StartColumn = -1;
@@ -148,12 +163,12 @@ function InsertBlock () {
 		return;
 	}
 
-	var FieldBGSize = _GS.FieldBG.GetComponent.<Renderer>().bounds.size;
+	var FieldBGSize = Setup.FieldBG.GetComponent.<Renderer>().bounds.size;
 	var ColumnSize = FieldBGSize.x / BlockColumns;
 
 	for (var i = 0; i < GroupControl.Length; i++) {
 	    var newBlock = Instantiate (BlockPrefab, new Vector3(0f, 0f, 0f), Quaternion.Euler(Vector3(0, 0, 0)) );
-	    newBlock.localScale.x = _GS.FieldBG.localScale.x / BlockColumns;
+	    newBlock.localScale.x = Setup.FieldBG.localScale.x / BlockColumns;
 	    newBlock.localScale.y = newBlock.localScale.x;
 	
 	    // use block size with a small correction value for the box collider

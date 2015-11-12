@@ -157,3 +157,11 @@ function AddBlock(CurrentBlock : GameObject) {
     Blocks[LastIndex] = CurrentBlock;
     LastIndex++;
 }
+
+function SetIsFalling(status : boolean) {
+    IsFalling = status;
+    for (var i = 0; i < Length; i++) {
+        if (Blocks[i] == null) continue;
+        Blocks[i].GetComponent(BlockControl).IsFalling = status;
+    }
+}

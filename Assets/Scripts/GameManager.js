@@ -38,6 +38,9 @@ private var TimeLimitMaxTime : int = 99;
 private var LocalSeconds : float = 0;
 private var Date = new Date();
 
+var Active : boolean = false;
+var Paused : boolean = false;
+
 function Awake() {
     GameTime = GetGameTime(true);
 
@@ -58,25 +61,32 @@ function OnDisable() {
 }
 
 function Update() {
-    GameTime += Time.deltaTime;
-    LocalSeconds += Time.deltaTime;
-    if (!IsGameOver && HasTimeLimit && TimeLimitMaxTime > 0 && LocalSeconds > TimeLimitMaxTime) {
-        GameOver(true);
-    }
+    if (Active == true) {
+        if (Paused == false) {
+            GameTime += Time.deltaTime;
+            LocalSeconds += Time.deltaTime;
+            if (!IsGameOver && HasTimeLimit && TimeLimitMaxTime > 0 && LocalSeconds > TimeLimitMaxTime) {
+                GameOver(true);
+            }
+        }
 
-    if (ShowSettings != true || !IsGameOver) {
-        if (Input.GetKey("escape")) {
-            Application.Quit();
+        if (Paused == false || !IsGameOver) {
+            if (Input.GetKey("escape")) {
+                Application.Quit();
 		
-        } else if (Input.inputString == "\b") {
-            // reset game
-            Reset(0);
+            } else if (Input.inputString == "\b") {
+                // reset game
+                Reset(0);
 		
-        } else if (Input.GetKey("f5")) {
-            // show highscores table
-            ShowHighscores = 2;
-        } else if (Input.GetKey("f8")) {
-            ShowSettings = true;
+            } else if (Input.GetKey("f5")) {
+                // show highscores table
+                ShowHighscores = 2;
+                Paused = true;
+
+            } else if (Input.GetKey("f8")) {
+                ShowSettings = true;
+                Paused = true;
+            }
         }
     }
 }
@@ -111,6 +121,7 @@ function Reset(nextRound : int) {
         LocalSeconds = 0;
         IsGameOver = false;
         GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
+        Paused = false;
     } else {
         GameOver(false);
     }
@@ -139,13 +150,13 @@ function GameOver(checkRound : boolean) {
             }
         }
         
-
         GetComponent.<AudioSource>().clip = GameOverAudio;
         GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
         GetComponent.<AudioSource>().Play();
 	    
         IsGameOver = true;
         ShowHighscores = 1;
+        Paused = true;
     }
 }
 
@@ -269,52 +280,54 @@ function SetGroupingAndRotation(newValue : boolean, prefs : boolean) {
 }
 
 function OnGUI() {
-	if (ShowHighscores == 1) { // add highscore window
-		var WindowHeight0 = 100;
-		var WindowRect0 = Rect( 
-			Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight0/2, Screen.width/2, WindowHeight0 
-		);
-    	GUILayout.Window(0, WindowRect0, AddHighscoreForm, "Add Highscore" );
-     	if (ScoreSubmitted) {
-     		ScoreSubmitted = false;
-     		AddScore(ScoreName, LocalScore);
-     		ShowHighscores = 2;
-     	}
-	} else if (ShowHighscores == 2) { // highscores list
-	    var WindowHeight1 = 10*35;
-	    var WindowRect1 = Rect( 
-			Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight1/2, Screen.width/2, WindowHeight1 
-		);
-	    GUILayout.Window(0, WindowRect1, AddHighscoresTable, "Highscores" );
-	} else if (ShowSettings == true) {
-	    var WindowHeight2 = 7*25;
-	    var WindowRect2 = Rect( 
-			Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight2/2, Screen.width/2, WindowHeight2 
-		);
-	    GUILayout.Window(0, WindowRect2, AddSettingsForm, "Settings" );
-	} else { // current score box
-	    var boxX = (BeatYourself && LocalRound > 0) ? ScoreBoxSizeX * 2 : ScoreBoxSizeX;
-		GUI.Box (
-			new Rect(Screen.width/2-boxX/2, ScoreBoxOffsetY, boxX, ScoreBoxSizeY), 
-			(BeatYourself && LocalRound > 0) 
-            ? "Score: " + LocalScore + " (" + (LocalScore - LocalPrevRoundsScore) + " / "+ LocalRoundScores[LocalRound-1] + ")":  "Score: " + LocalScore
-		);
-		var TwoBottomBoxes = (HasRound2Round && HasTimeLimit);
-		if (HasRound2Round && Round2RoundMaxRounds > 0) {
-		    GUI.Box (
-			    new Rect(Screen.width/2-R2RBoxSizeX/2 - (TwoBottomBoxes ? TLBoxSizeX/2 + 10 : 0), 
-                Screen.height - R2RBoxSizeY - R2RBoxSizeY/2, R2RBoxSizeX, R2RBoxSizeY), 
-			    "Round: " + (LocalRound + 1) + " / " + Round2RoundMaxRounds
+    if (Active == true) {
+        if (ShowHighscores == 1) { // add highscore window
+            var WindowHeight0 = 100;
+            var WindowRect0 = Rect( 
+			    Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight0/2, Screen.width/2, WindowHeight0 
 		    );
-		}
-		if (HasTimeLimit && TimeLimitMaxTime > 0) {
-		    GUI.Box (
-			    new Rect(Screen.width/2-TLBoxSizeX/2 + (TwoBottomBoxes ? R2RBoxSizeX/2 + 10 : 0), 
-                Screen.height - TLBoxSizeY - TLBoxSizeY/2, TLBoxSizeX, TLBoxSizeY), 
-			    "Time Limit: " + Mathf.Floor(TimeLimitMaxTime - LocalSeconds)
+            GUILayout.Window(0, WindowRect0, AddHighscoreForm, "Add Highscore" );
+            if (ScoreSubmitted) {
+                ScoreSubmitted = false;
+                AddScore(ScoreName, LocalScore);
+                ShowHighscores = 2;
+            }
+        } else if (ShowHighscores == 2) { // highscores list
+            var WindowHeight1 = 10*35;
+            var WindowRect1 = Rect( 
+			    Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight1/2, Screen.width/2, WindowHeight1 
 		    );
-		}
-	}
+            GUILayout.Window(0, WindowRect1, AddHighscoresTable, "Highscores" );
+        } else if (ShowSettings == true) {
+            var WindowHeight2 = 7*25;
+            var WindowRect2 = Rect( 
+			    Screen.width/2-(Screen.width/4), Screen.height/2-WindowHeight2/2, Screen.width/2, WindowHeight2 
+		    );
+            GUILayout.Window(0, WindowRect2, AddSettingsForm, "Settings" );
+        } else { // current score box
+            var boxX = (BeatYourself && LocalRound > 0) ? ScoreBoxSizeX * 2 : ScoreBoxSizeX;
+            GUI.Box (
+			    new Rect(Screen.width/2-boxX/2, ScoreBoxOffsetY, boxX, ScoreBoxSizeY), 
+			    (BeatYourself && LocalRound > 0) 
+                ? "Score: " + LocalScore + " (" + (LocalScore - LocalPrevRoundsScore) + " / "+ LocalRoundScores[LocalRound-1] + ")":  "Score: " + LocalScore
+		    );
+            var TwoBottomBoxes = (HasRound2Round && HasTimeLimit);
+            if (HasRound2Round && Round2RoundMaxRounds > 0) {
+                GUI.Box (
+			        new Rect(Screen.width/2-R2RBoxSizeX/2 - (TwoBottomBoxes ? TLBoxSizeX/2 + 10 : 0), 
+                    Screen.height - R2RBoxSizeY - R2RBoxSizeY/2, R2RBoxSizeX, R2RBoxSizeY), 
+			        "Round: " + (LocalRound + 1) + " / " + Round2RoundMaxRounds
+		        );
+            }
+            if (HasTimeLimit && TimeLimitMaxTime > 0) {
+                GUI.Box (
+			        new Rect(Screen.width/2-TLBoxSizeX/2 + (TwoBottomBoxes ? R2RBoxSizeX/2 + 10 : 0), 
+                    Screen.height - TLBoxSizeY - TLBoxSizeY/2, TLBoxSizeX, TLBoxSizeY), 
+			        "Time Limit: " + Mathf.Floor(TimeLimitMaxTime - LocalSeconds)
+		        );
+            }
+        }
+    }
 }
 
 function AddSettingsForm(windowID : int) {
