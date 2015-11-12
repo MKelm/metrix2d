@@ -30,13 +30,12 @@ function SetBlockInGroup(BlockObj : GameObject) {
     GroupControl.AddBlock(BlockObj);
 }
 
-    function BlockPosFree(Column : int, Row : int) {
+function BlockPosFree(Column : int, Row : int) {
     return BlockInRows[Column, Row] == null;
 }
 
 function Update () {
 	if (BlockRows > -1) {
-	    
 		// check / change grid position of blocks which falls from bottom to top
 		for (var c = 0; c < BlockColumns; c++) {
 			for (var r = 0; r < BlockRows - 1; r++) {
@@ -169,6 +168,7 @@ function InsertBlock () {
 	    var BlockSpriteId = Random.Range(0, BlockSprites.Length);
 	    newBlock.GetComponent(SpriteRenderer).sprite = BlockSprites[BlockSpriteId];
 	    newBlock.GetComponent.<Rigidbody2D>().gravityScale = BlockGravityScale;
+	    if (Manager.IsGameOver) newBlock.GetComponent.<Rigidbody2D>().gravityScale = 10;
 
 	    var CurrentBlockControl = newBlock.GetComponent(BlockControl);
 

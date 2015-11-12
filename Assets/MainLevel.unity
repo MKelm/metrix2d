@@ -368,6 +368,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29310d16f89e4ff4188762ef2778dc71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsGameOver: 0
   GameOverAudio: {fileID: 8300000, guid: e3ccf899df30a65459f1e2054a87dee9, type: 3}
   IncreaseScoreAudio: {fileID: 8300000, guid: f4ffcd2d5d312af4988c4e52eaa64254, type: 3}
   ScoreBoxOffsetY: 10
@@ -375,6 +376,8 @@ MonoBehaviour:
   ScoreBoxSizeY: 25
   TLBoxSizeX: 120
   TLBoxSizeY: 25
+  R2RBoxSizeX: 120
+  R2RBoxSizeY: 25
 --- !u!114 &725737008
 MonoBehaviour:
   m_ObjectHideFlags: 0

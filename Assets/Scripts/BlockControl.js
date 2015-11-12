@@ -30,11 +30,11 @@ function Update () {
 }
 
 function UpdateRow() {
-    var ff : float =
+    var fRow : float =
       (FieldBGVec.y / 2 + transform.localPosition.y + transform.GetComponent.<Renderer>().bounds.size.y/4) 
       / transform.GetComponent.<Renderer>().bounds.size.y;
-    if (ff < Manager.BlockRows) {
-        Row = Mathf.Floor(ff);
+    if (fRow < Manager.BlockRows) {
+        Row = Mathf.Floor(fRow);
     }
 }
 

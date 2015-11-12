@@ -1,5 +1,6 @@
 ﻿#pragma strict
 
+var IsGameOver : boolean = false;
 var GameOverAudio : AudioClip;
 var IncreaseScoreAudio : AudioClip;
 
@@ -9,6 +10,9 @@ var ScoreBoxSizeY : float = 25.0f;
 
 var TLBoxSizeX : float = 120.0f;
 var TLBoxSizeY : float = 25.0f;
+
+var R2RBoxSizeX : float = 120.0f;
+var R2RBoxSizeY : float = 25.0f;
 
 private var LocalScore : int = 0;
 private var ScoreName : String = "";
@@ -21,6 +25,8 @@ private var GameTime : float = 0;
 private var EasyRider : boolean = false; // default false, classic 2008
 private var GroupingAndRotation : boolean = false; // default true, classic 2008
 
+private var LocalRoundScores : int[];
+private var LocalRound : int = 0;
 private var HasRound2Round : boolean = false;
 private var Round2RoundMaxRounds : int = 9;
 
@@ -48,21 +54,18 @@ function OnDisable() {
 
 function Update() {
     GameTime += Time.deltaTime;
+    LocalSeconds += Time.deltaTime;
+    if (!IsGameOver && HasTimeLimit && TimeLimitMaxTime > 0 && LocalSeconds > TimeLimitMaxTime) {
+        GameOver();
+    }
 
-    if (ShowSettings != true || ShowHighscores > 0) {
-        if (ShowHighscores == 0) {
-            LocalSeconds += Time.deltaTime;
-            if (HasTimeLimit && TimeLimitMaxTime > 0 && LocalSeconds > TimeLimitMaxTime) {
-                GameOver();
-            }
-        }
-    
+    if (ShowSettings != true || !IsGameOver) {
         if (Input.GetKey("escape")) {
             Application.Quit();
 		
         } else if (Input.inputString == "\b") {
             // reset game
-            Reset();
+            Reset(0);
 		
         } else if (Input.GetKey("f5")) {
             // show highscores table
@@ -73,26 +76,57 @@ function Update() {
     }
 }
 
-function Reset() {
-    LocalScore = 0;
+function UpdateScores(nextRound : int) {
+    if (nextRound == 0) {
+        LocalScore = 0;
+    } else if (HasRound2Round && Round2RoundMaxRounds > 0) {
+        var PrevScore = 0;
+        if (LocalRound > 0) {
+            for (var i = 0; i < LocalRound; i++)
+                PrevScore += LocalRoundScores[i];
+        }
+        if (LocalRound < Round2RoundMaxRounds) {
+            LocalRoundScores[LocalRound] = LocalScore - PrevScore;
+        }
+    }
+}
+
+function Reset(nextRound : int) {
+    UpdateScores(nextRound);
+    LocalRound = nextRound;
     LocalSeconds = 0;
+    IsGameOver = false;
     GameObject.Find("_GM").GetComponent(BlockManager).ResetBlockField();
 }
 
 function IncreaseScore() {
-	GetComponent.<AudioSource>().clip = IncreaseScoreAudio;
-	GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
-	GetComponent.<AudioSource>().Play();
+    if (!IsGameOver) {
+        GetComponent.<AudioSource>().clip = IncreaseScoreAudio;
+        GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
+        GetComponent.<AudioSource>().Play();
 	
-	LocalScore++;
+        LocalScore++;
+    }
 }
 
 function GameOver() {
-    GetComponent.<AudioSource>().clip = GameOverAudio;
-	GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
-	GetComponent.<AudioSource>().Play();
-	
-	ShowHighscores = 1;
+    if (!IsGameOver) {
+        if (HasRound2Round && Round2RoundMaxRounds > 0) {
+            if (LocalRound < Round2RoundMaxRounds - 1) {
+                Reset(LocalRound + 1);
+                return;
+            } else {
+                UpdateScores(LocalRound + 1);
+            }
+        } 
+
+        GetComponent.<AudioSource>().clip = GameOverAudio;
+        GetComponent.<AudioSource>().pitch = Random.Range (0.9, 1.1);
+        GetComponent.<AudioSource>().Play();
+	    
+        IsGameOver = true;
+        ShowHighscores = 1;
+    }
 }
 
 function GetGameTime(prefs : boolean) {
@@ -127,6 +161,9 @@ function GetRound2RoundMaxRounds(prefs : boolean) {
     if (prefs === true && GameTime > 0) {
         Round2RoundMaxRounds = PlayerPrefs.GetInt("settingRound2RoundMaxRounds");
     }
+    if (Round2RoundMaxRounds > 0) {
+        LocalRoundScores = new int[Round2RoundMaxRounds];
+    }
     return Round2RoundMaxRounds;
 }
 
@@ -134,6 +171,10 @@ function SetRound2RoundMaxRounds(newValue : int, prefs : boolean) {
     Round2RoundMaxRounds = newValue;
     if (prefs === true) {
         PlayerPrefs.SetInt("settingRound2RoundMaxRounds", Round2RoundMaxRounds);
+    }
+    LocalRound = 0;
+    if (Round2RoundMaxRounds > 0) {
+        LocalRoundScores = new int[Round2RoundMaxRounds];
     }
 }
 
@@ -222,9 +263,18 @@ function OnGUI() {
 			new Rect(Screen.width/2-ScoreBoxSizeX/2, ScoreBoxOffsetY, ScoreBoxSizeX, ScoreBoxSizeY), 
 			"Score: " + LocalScore
 		);
+		var TwoBottomBoxes = (HasRound2Round && HasTimeLimit);
+		if (HasRound2Round && Round2RoundMaxRounds > 0) {
+		    GUI.Box (
+			    new Rect(Screen.width/2-R2RBoxSizeX/2 - (TwoBottomBoxes ? TLBoxSizeX/2 + 10 : 0), 
+                Screen.height - R2RBoxSizeY - R2RBoxSizeY/2, R2RBoxSizeX, R2RBoxSizeY), 
+			    "Round: " + (LocalRound + 1) + " / " + Round2RoundMaxRounds
+		    );
+		}
 		if (HasTimeLimit && TimeLimitMaxTime > 0) {
 		    GUI.Box (
-			    new Rect(Screen.width/2-TLBoxSizeX/2, Screen.height - TLBoxSizeY - ScoreBoxSizeY/2, TLBoxSizeX, TLBoxSizeY), 
+			    new Rect(Screen.width/2-TLBoxSizeX/2 + (TwoBottomBoxes ? R2RBoxSizeX/2 + 10 : 0), 
+                Screen.height - TLBoxSizeY - TLBoxSizeY/2, TLBoxSizeX, TLBoxSizeY), 
 			    "Time Limit: " + Mathf.Floor(TimeLimitMaxTime - LocalSeconds)
 		    );
 		}
@@ -284,7 +334,7 @@ function AddSettingsForm(windowID : int) {
 
     GUILayout.BeginHorizontal();
     if (GUILayout.Button("Close")) {
-        Reset();
+        Reset(0);
         ShowSettings = false;
     }
     GUILayout.EndHorizontal();
@@ -310,7 +360,7 @@ function AddHighscoresTable(windowID : int) {
 	GUILayout.BeginHorizontal();
 	if (GUILayout.Button("Close")) {
 	    ShowHighscores = 0;
-	    Reset();
+	    Reset(0);
 	}
 	GUILayout.EndHorizontal();
     
